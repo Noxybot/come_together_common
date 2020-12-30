@@ -1,0 +1,305 @@
+syntax = "proto3";
+package ComeTogether;
+
+message image{
+    bytes data = 1;
+    string uuid = 2;
+    int32 sequence_number = 3;
+}
+
+message access_token{
+    string token = 1;
+}
+
+service MainEndpoint{
+    //**********************************************************//
+    rpc Check(check_request) returns (check_response) {} //email, login
+    rpc RegisterUser(register_request) returns (register_response) {}
+    rpc LoginUser(login_request) returns (login_response) {}
+    //**********************************************************//
+    rpc AddMarker(add_marker_request) returns (add_marker_response) {}
+    rpc GetAllMarkers(access_token) returns (stream marker_info) {}
+    //**********************************************************//
+    rpc GetInfo(get_info_request) returns (get_info_response) {} //about user, marker, marker chat
+    rpc UpdateInfo(update_info_request) returns (update_info_response) {} //about user, marker
+    //**********************************************************//
+    rpc ManageImage(manage_image_request) returns (manage_image_response) {} //upload/delete user, marker image
+    rpc GetImages(get_images_request) returns (stream image) {} //user, marker
+    //**********************************************************//
+    rpc SendChatMessage(send_chat_message_request) returns (send_chat_message_response) {}
+    rpc GetChatMessages(get_chat_messages_request) returns (stream chat_message) {}
+    //**********************************************************//
+    /*
+    * Events:
+    * Add new marker to map or message to chat
+    * Edit existing marker, message or user profile
+    * Delete existing marker or image
+    */
+    rpc SubscribeToEvents(access_token) returns (stream event) {}
+}
+
+message update_info_request{
+    enum update_type{
+        MARKER = 0;
+        USER = 1; 
+    }
+    string access_token = 1;
+    update_type type = 2;
+    oneof data{
+        marker_info m_info = 3;
+        user_info u_info = 4;
+    }
+}
+
+message update_info_response{
+	enum result{
+		OK = 0;
+		INSUFFICIENT_PERMISIONS = 1;
+		OTHER = 999;
+	}
+	result res = 1;
+}
+
+message event{
+    enum event_type{
+        MARKER_ADDED = 0;
+        MARKER_EDITED = 2;
+        MARKER_DELETED_BY_USER = 3;
+        MARKER_DELETED_BY_TIMEOUT = 4;
+        MESSAGE_ADDED = 5;
+        MESSAGE_EDITED = 6;
+        MESSAGE_DELETED = 7;
+        USER_UPDATED = 8;
+    }
+    event_type type = 1;
+    oneof data{
+        marker_info m_info = 2;
+        chat_message c_message = 3;
+        user_info u_info = 4;
+    }
+}
+
+message generic_chat_info{
+    string uuid = 1;
+    string title = 2;
+    repeated string participants_uuid = 3;
+}
+
+message marker_chat_info{
+	generic_chat_info info = 1;
+    string marker_uuid = 2;
+}
+
+message get_chat_messages_request{
+    string access_token = 1;
+    string chat_uuid = 2;
+    int32 page_size = 3; //how many messages will be returned
+    int32 page_number = 4;
+    string hash = 5; //MD5 hash of page_size last messages uuid
+}
+
+message chat_message{
+	enum message_type{
+		TEXT = 0;
+		//IMAGE = 1;
+	}
+	message_type type = 1;
+	string sender_uuid = 2;
+	oneof content{
+		string text = 3;
+		//bytes photo = n;
+	}
+	int64 sent_unix_time = 4;
+	string chat_uuid = 5;
+	int64 sequence_number = 6;
+	string uuid = 7;
+}
+
+message send_chat_message_request{
+    string access_token = 1;
+    chat_message message = 2;
+}
+
+message send_chat_message_response{
+    enum result{
+        OK = 0;
+        CHAT_DOES_NOT_EXIST = 1;
+        INSUFFICIENT_PERMISIONS = 2;
+        OTHER = 999;
+    }
+    result res = 1;
+    int64 actual_sequence_number = 2;
+}
+
+message get_info_request{
+    enum info_type{
+        USER = 0;
+        MARKER = 1;
+        MARKER_CHAT = 2;
+        //PERSONAL_CHAT
+    }
+    info_type type = 1;
+    string access_token = 2;
+    string target_uuid = 3; //user or marker or chat uuid
+}
+
+message get_info_response{
+    oneof data{
+        user_info u_info = 1;
+        marker_info m_info = 2;
+        marker_chat_info m_c_info = 3;
+        //generic_chat_info = 4;
+    }
+}
+
+message get_images_request{
+    enum image_type{
+        USER = 0;
+        MARKER = 1;
+        //CHAT_MESSAGE_IMAGE
+    }
+    image_type type = 1;
+    string target_uuid = 2; //user or marker uuid
+    string access_token = 3;
+    int32 amount = 4; //-1 means all images
+    string hash = 5; //MD5 hash of n last uuids; if it haven`t changed, server will not send images
+    int32 starting_sequence_number = 6;
+}
+
+message manage_image_request{
+    enum action{
+        UPLOAD_USER_IMAGE = 0;
+        DELETE_USER_IMAGE = 1;
+        UPLOAD_MARKER_IMAGE = 2;
+        DELETE_MARKER_IMAGE = 3;
+    }
+    action act = 1;
+    string access_token = 2;
+    string target_uuid = 3; //user or marker uuid
+    oneof data{
+        bytes image = 4; //for uploading
+        string image_uuid = 5; //for deleting
+    }
+}
+
+message manage_image_response{
+    enum result{
+        OK = 0;
+        INSUFFICIENT_PERMISIONS = 1;
+        OTHER = 999;
+    }
+    result res = 1;
+    /*optional*/ string image_uuid = 2;
+    /*optional*/ int32 image_sequence_number = 3;
+}
+
+message check_request{
+    enum type{
+        EMAIL = 0;
+        LOGIN = 1;
+    }
+    string data = 1;
+}
+
+message check_response{
+    enum result{
+        AVAILABLE = 0;
+        TAKEN = 1;
+    }
+    result res = 1;
+}
+
+message login_request{
+    string login = 1;
+    string password = 2;
+}
+
+message login_response{
+    enum result{
+        OK = 0;
+        USER_NOT_FOUND = 1;
+        WRONG_PASSWORD = 2;
+        OTHER = 999;
+    }
+    result res = 1;
+    /*optional*/ user_info info = 2;
+    string access_token = 3;
+}
+
+message register_request{
+	user_info info = 1;
+}
+
+message register_response{
+	enum result{
+        OK = 0;
+        EMAIL_ALREADY_TAKEN = 1;
+        LOGIN_ALREADY_TAKEN = 2;
+        OTHER = 999;
+    }
+    result res = 1;
+    /*optional*/ string user_uuid = 2;
+    /*optional*/ string access_token = 3;
+}
+
+message user_info{
+    string email = 1;
+    string password = 2;
+    string first_name = 3;
+    string last_naem = 4;
+    string bio = 5;
+    /*optional*/ string uuid = 6;
+    int32 images_amount = 7;
+}
+
+message marker_info{
+    enum category{
+       CYCLING = 0;
+       FOOTBALL = 1;
+       BASKETBALL = 2;
+       RUNNING = 3;
+       GYM = 4;
+       GALLERY = 5;
+       EXCURSION = 6;
+       THEATER = 7;
+       CINEMA = 8;
+       BAR = 9;
+       RESTAURANT = 10;
+       NIGTH_CLUB = 11;
+       HOOKAH = 12;
+       CAFE = 13;
+       WALK = 14;
+       CONCERT = 15;
+       QUEST = 16;
+       ZOO = 17;
+    }
+    category cat = 1;
+    int64 from_unix_time = 2;
+    int64 to_unix_time = 3;
+    int64 creation_unix_time = 4;
+    string creator_uuid = 5;
+    string name = 6;
+    int32 expected_people_amount = 7;
+    string expected_expenses = 8; //e.g. 300-500
+    double latitude = 9;
+    double longitude = 10;
+    /*optional*/ string uuid = 11;
+    /*optional*/ string chat_uuid = 12;
+    int32 images_amount = 13;
+}
+
+message add_marker_request{
+    marker_info info = 1;
+}
+
+message add_marker_response{
+    enum result{
+        OK = 0;
+        TIME_INTERVAL_TOO_SMALL = 1;
+        CREATION_TIME_OUTDATED = 2;
+        OTHER = 999;
+    }
+    result res = 1;
+    /*optinal*/ string uuid = 2;
+    /*optional*/ string chat_uuid = 3;
+}
