@@ -11,7 +11,12 @@ message access_token{
     string token = 1;
 }
 
+message empty{
+}
+
 service MainEndpoint{
+    rpc AskToken(ask_token_request) returns (empty) {}
+    rpc VerifyToken(verify_token_request) returns (verify_token_response) {}
     //**********************************************************//
     rpc Check(check_request) returns (check_response) {} //email, login
     rpc RegisterUser(register_request) returns (register_response) {}
@@ -36,6 +41,24 @@ service MainEndpoint{
     * Delete existing marker or image
     */
     rpc SubscribeToEvents(access_token) returns (stream event) {}
+}
+
+message ask_token_request{
+    string email = 1;
+}
+message verify_token_request{
+    string email = 1;
+    string token = 2;
+}
+
+message verify_token_response{
+    enum result{
+        OK = 0;
+        EMAIL_NOT_FOUND = 1;
+        WRONG_TOKEN = 2;
+        OTHER = 999;
+    }
+    result res = 1;
 }
 
 message update_info_request{
