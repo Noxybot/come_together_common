@@ -11,21 +11,18 @@ message access_token{
     string token = 1;
 }
 
-message empty{
-}
-
 service MainEndpoint{
-    rpc AskToken(ask_token_request) returns (empty) {}
+    rpc AskToken(ask_token_request) returns (ask_token_response) {}
     rpc VerifyToken(verify_token_request) returns (verify_token_response) {}
     //**********************************************************//
-    rpc Check(check_request) returns (check_response) {} //email, login
+    rpc Check(check_request) returns (check_response) {} //check email, login
     rpc RegisterUser(register_request) returns (register_response) {}
     rpc LoginUser(login_request) returns (login_response) {}
     //**********************************************************//
     rpc AddMarker(add_marker_request) returns (add_marker_response) {}
     rpc GetAllMarkers(access_token) returns (stream marker_info) {}
     //**********************************************************//
-    rpc GetInfo(get_info_request) returns (get_info_response) {} //about user, marker, marker chat
+    rpc GetInfo(get_info_request) returns (get_info_response) {} //about user, marker, chat
     rpc UpdateInfo(update_info_request) returns (update_info_response) {} //about user, marker
     //**********************************************************//
     rpc ManageImage(manage_image_request) returns (manage_image_response) {} //upload/delete user, marker image
@@ -46,6 +43,17 @@ service MainEndpoint{
 message ask_token_request{
     string email = 1;
 }
+
+message ask_token_response{
+    enum result{
+        NOT_SET = 0;
+        OK = 1;
+        MAIL_WAS_NOT_SENT = 2;
+        OTHER = 999;
+    }
+    result res = 1;
+}
+
 message verify_token_request{
     string email = 1;
     string token = 2;
@@ -53,9 +61,10 @@ message verify_token_request{
 
 message verify_token_response{
     enum result{
-        OK = 0;
-        EMAIL_NOT_FOUND = 1;
-        WRONG_TOKEN = 2;
+        NOT_SET = 0;
+        OK = 1;
+        EMAIL_NOT_FOUND = 2;
+        WRONG_TOKEN = 3;
         OTHER = 999;
     }
     result res = 1;
@@ -63,8 +72,9 @@ message verify_token_response{
 
 message update_info_request{
     enum update_type{
-        MARKER = 0;
-        USER = 1; 
+        NOT_SET = 0;
+        MARKER = 1;
+        USER = 2; 
     }
     string access_token = 1;
     update_type type = 2;
@@ -75,17 +85,19 @@ message update_info_request{
 }
 
 message update_info_response{
-	enum result{
-		OK = 0;
-		INSUFFICIENT_PERMISIONS = 1;
-		OTHER = 999;
-	}
-	result res = 1;
+    enum result{
+        NOT_SET = 0;
+        OK = 1;
+        INSUFFICIENT_PERMISIONS = 2;
+        OTHER = 999;
+    }
+    result res = 1;
 }
 
 message event{
     enum event_type{
-        MARKER_ADDED = 0;
+        NOT_SET = 0;
+        MARKER_ADDED = 1;
         MARKER_EDITED = 2;
         MARKER_DELETED_BY_USER = 3;
         MARKER_DELETED_BY_TIMEOUT = 4;
@@ -102,15 +114,11 @@ message event{
     }
 }
 
-message generic_chat_info{
+message chat_info{
     string uuid = 1;
-    string title = 2;
+    string title = 2; //empty for personal chats
     repeated string participants_uuid = 3;
-}
-
-message marker_chat_info{
-	generic_chat_info info = 1;
-    string marker_uuid = 2;
+    string last_visible_message = 4;
 }
 
 message get_chat_messages_request{
@@ -122,20 +130,22 @@ message get_chat_messages_request{
 }
 
 message chat_message{
-	enum message_type{
-		TEXT = 0;
-		//IMAGE = 1;
-	}
-	message_type type = 1;
-	string sender_uuid = 2;
-	oneof content{
-		string text = 3;
-		//bytes photo = n;
-	}
-	int64 sent_unix_time = 4;
-	string chat_uuid = 5;
-	int64 sequence_number = 6;
-	string uuid = 7;
+    enum message_content{
+        NOT_SET = 0;
+        TEXT = 1;
+        //IMAGE = 1;
+    }
+    message_content content_type = 1;
+    string sender_uuid = 2;
+    oneof content{
+        string text = 3;
+        //bytes photo = n;
+    }
+    int64 sent_unix_time = 4;
+    //for personal chat uuid is MD5 of sender + target uuids
+    string chat_uuid = 5;
+    int64 sequence_number = 6;
+    string uuid = 7; //filled only by server
 }
 
 message send_chat_message_request{
@@ -145,40 +155,44 @@ message send_chat_message_request{
 
 message send_chat_message_response{
     enum result{
-        OK = 0;
-        CHAT_DOES_NOT_EXIST = 1;
-        INSUFFICIENT_PERMISIONS = 2;
+        NOT_SET = 0;
+        OK = 1;
+        CHAT_DOES_NOT_EXIST = 2;
+        USER_DOES_NOT_EXIST = 3;
+        INSUFFICIENT_PERMISIONS = 4;
         OTHER = 999;
     }
     result res = 1;
     int64 actual_sequence_number = 2;
+    string message_uuid = 4;
 }
 
 message get_info_request{
     enum info_type{
-        USER = 0;
-        MARKER = 1;
-        MARKER_CHAT = 2;
-        //PERSONAL_CHAT
+        NOT_SET = 0;
+        USER = 1;
+        MARKER = 2;
+        CHAT = 3;
     }
     info_type type = 1;
     string access_token = 2;
-    string target_uuid = 3; //user or marker or chat uuid
+    string target_uuid = 3; //user uuid or chat uuid
 }
 
 message get_info_response{
     oneof data{
         user_info u_info = 1;
         marker_info m_info = 2;
-        marker_chat_info m_c_info = 3;
+        chat_info c_info = 3;
         //generic_chat_info = 4;
     }
 }
 
 message get_images_request{
     enum image_type{
-        USER = 0;
-        MARKER = 1;
+        NOT_SET = 0;
+        USER = 1;
+        MARKER = 2;
         //CHAT_MESSAGE_IMAGE
     }
     image_type type = 1;
@@ -191,10 +205,11 @@ message get_images_request{
 
 message manage_image_request{
     enum action{
-        UPLOAD_USER_IMAGE = 0;
-        DELETE_USER_IMAGE = 1;
-        UPLOAD_MARKER_IMAGE = 2;
-        DELETE_MARKER_IMAGE = 3;
+        NOT_SET = 0;
+        UPLOAD_USER_IMAGE = 1;
+        DELETE_USER_IMAGE = 2;
+        UPLOAD_MARKER_IMAGE = 3;
+        DELETE_MARKER_IMAGE = 4;
     }
     action act = 1;
     string access_token = 2;
@@ -207,27 +222,32 @@ message manage_image_request{
 
 message manage_image_response{
     enum result{
-        OK = 0;
-        INSUFFICIENT_PERMISIONS = 1;
+        NOT_SET = 0;
+        OK = 1;
+        INSUFFICIENT_PERMISIONS = 2;
         OTHER = 999;
     }
     result res = 1;
-    /*optional*/ string image_uuid = 2;
-    /*optional*/ int32 image_sequence_number = 3;
+    /*optional*/ string image_uuid = 2; //when image is uploaded
+    /*optional*/ int32 image_sequence_number = 3; //when image is uploaded
 }
 
 message check_request{
     enum type{
-        EMAIL = 0;
-        LOGIN = 1;
+        NOT_SET = 0;
+        EMAIL = 1;
+        LOGIN = 2;
     }
-    string data = 1;
+    type check_type = 1;
+    string data = 2;
 }
 
 message check_response{
     enum result{
-        AVAILABLE = 0;
-        TAKEN = 1;
+        NOT_SET = 0;
+        AVAILABLE = 1;
+        TAKEN = 2;
+        OTHER = 999;
     }
     result res = 1;
 }
@@ -239,9 +259,10 @@ message login_request{
 
 message login_response{
     enum result{
-        OK = 0;
-        USER_NOT_FOUND = 1;
-        WRONG_PASSWORD = 2;
+        NOT_SET = 0;
+        OK = 1;
+        USER_NOT_FOUND = 2;
+        WRONG_PASSWORD = 3;
         OTHER = 999;
     }
     result res = 1;
@@ -250,14 +271,15 @@ message login_response{
 }
 
 message register_request{
-	user_info info = 1;
+    user_info info = 1;
 }
 
 message register_response{
-	enum result{
-        OK = 0;
-        EMAIL_ALREADY_TAKEN = 1;
-        LOGIN_ALREADY_TAKEN = 2;
+    enum result{
+        NOT_SET = 0;
+        OK = 1;
+        EMAIL_ALREADY_TAKEN = 2;
+        LOGIN_ALREADY_TAKEN = 3;
         OTHER = 999;
     }
     result res = 1;
@@ -266,49 +288,56 @@ message register_response{
 }
 
 message user_info{
-    string email = 1;
-    string password = 2;
-    string first_name = 3;
-    string last_naem = 4;
-    string bio = 5;
-    /*optional*/ string uuid = 6;
-    int32 images_amount = 7;
+    /*optional*/ string uuid = 1; //absent in register_request
+    string email = 2;
+    string login = 3;
+    string password = 4;
+    string first_name = 5;
+    /*optional*/ string last_name = 6;
+    /*optional*/ repeated string images_uuid = 7;
+    /*optional*/ string other_info_json = 8;
 }
 
 message marker_info{
     enum category{
-       CYCLING = 0;
-       FOOTBALL = 1;
-       BASKETBALL = 2;
-       RUNNING = 3;
-       GYM = 4;
-       GALLERY = 5;
-       EXCURSION = 6;
-       THEATER = 7;
-       CINEMA = 8;
-       BAR = 9;
-       RESTAURANT = 10;
-       NIGTH_CLUB = 11;
-       HOOKAH = 12;
-       CAFE = 13;
-       WALK = 14;
-       CONCERT = 15;
-       QUEST = 16;
-       ZOO = 17;
+       NOT_SET = 0;
+       CYCLING = 1;
+       FOOTBALL = 2;
+       BASKETBALL = 3;
+       RUNNING = 4;
+       GYM = 5;
+       GALLERY = 6;
+       EXCURSION = 7;
+       THEATER = 8;
+       CINEMA = 9;
+       BAR = 10;
+       RESTAURANT = 11;
+       NIGTH_CLUB = 12;
+       HOOKAH = 13;
+       CAFE = 14;
+       WALK = 15;
+       CONCERT = 16;
+       QUEST = 17;
+       ZOO = 18;
+    }
+    enum marker_type{
+        NOT_SET_MARKER_TYPE = 0;
+        PRIVATE = 1;
+        GROUP = 2;
     }
     category cat = 1;
-    int64 from_unix_time = 2;
-    int64 to_unix_time = 3;
-    int64 creation_unix_time = 4;
-    string creator_uuid = 5;
-    string name = 6;
-    int32 expected_people_amount = 7;
-    string expected_expenses = 8; //e.g. 300-500
+    marker_type type = 2;
+    int64 from_unix_time = 3;
+    int64 to_unix_time = 4;
+    int64 creation_unix_time = 5;
+    string creator_uuid = 6;
+    string display_name = 7;
     double latitude = 9;
     double longitude = 10;
     /*optional*/ string uuid = 11;
-    /*optional*/ string chat_uuid = 12;
+    /*optional*/ string chat_uuid = 12; //for PRIVATE should not be present
     int32 images_amount = 13;
+    string other_data_json = 14;
 }
 
 message add_marker_request{
@@ -317,12 +346,13 @@ message add_marker_request{
 
 message add_marker_response{
     enum result{
-        OK = 0;
-        TIME_INTERVAL_TOO_SMALL = 1;
-        CREATION_TIME_OUTDATED = 2;
+        NOT_SET = 0;
+        OK = 1;
+        TIME_INTERVAL_TOO_SMALL = 2;
+        CREATION_TIME_OUTDATED = 3;
         OTHER = 999;
     }
     result res = 1;
     /*optinal*/ string uuid = 2;
-    /*optional*/ string chat_uuid = 3;
+    /*optional*/ string chat_uuid = 3; //for PRIVATE markers chat is not created
 }
