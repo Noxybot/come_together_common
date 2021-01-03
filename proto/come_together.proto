@@ -95,7 +95,7 @@ message update_info_response{
 }
 
 message event{
-    enum event_type{
+    enum type{
         NOT_SET = 0;
         MARKER_ADDED = 1;
         MARKER_EDITED = 2;
@@ -106,7 +106,7 @@ message event{
         MESSAGE_DELETED = 7;
         USER_UPDATED = 8;
     }
-    event_type type = 1;
+    type event_type = 1;
     oneof data{
         marker_info m_info = 2;
         chat_message c_message = 3;
