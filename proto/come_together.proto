@@ -20,8 +20,10 @@ service MainEndpoint{
     rpc LoginUser(login_request) returns (login_response) {}
     //**********************************************************//
     rpc AddMarker(add_marker_request) returns (add_marker_response) {}
+    //may be unused (for now)
     rpc GetAllMarkers(access_token) returns (stream marker_info) {}
     //**********************************************************//
+    //may be unused (for now)
     rpc GetInfo(get_info_request) returns (get_info_response) {} //about user, marker, chat
     rpc UpdateInfo(update_info_request) returns (update_info_response) {} //about user, marker
     //**********************************************************//
@@ -168,13 +170,13 @@ message send_chat_message_response{
 }
 
 message get_info_request{
-    enum info_type{
+    enum type{
         NOT_SET = 0;
         USER = 1;
         MARKER = 2;
         CHAT = 3;
     }
-    info_type type = 1;
+    type info_type = 1;
     string access_token = 2;
     string target_uuid = 3; //user uuid or chat uuid
 }
@@ -189,13 +191,13 @@ message get_info_response{
 }
 
 message get_images_request{
-    enum image_type{
+    enum type{
         NOT_SET = 0;
         USER = 1;
         MARKER = 2;
         //CHAT_MESSAGE_IMAGE
     }
-    image_type type = 1;
+    type image_type = 1;
     string target_uuid = 2; //user or marker uuid
     string access_token = 3;
     int32 amount = 4; //-1 means all images
@@ -293,9 +295,9 @@ message user_info{
     string login = 3;
     string password = 4;
     string first_name = 5;
-    /*optional*/ string last_name = 6;
-    /*optional*/ repeated string images_uuid = 7;
-    /*optional*/ string other_info_json = 8;
+    /*optional*/ string last_name = 6; //may be absent
+    /*optional*/ repeated string images_uuid = 7; //absent in register_request or may be empty
+    /*optional*/ string other_info_json = 8; //may be absent
 }
 
 message marker_info{
@@ -320,13 +322,13 @@ message marker_info{
        QUEST = 17;
        ZOO = 18;
     }
-    enum marker_type{
+    enum type{
         NOT_SET_MARKER_TYPE = 0;
         PRIVATE = 1;
         GROUP = 2;
     }
     category cat = 1;
-    marker_type type = 2;
+    type marker_type = 2;
     int64 from_unix_time = 3;
     int64 to_unix_time = 4;
     int64 creation_unix_time = 5;
@@ -336,7 +338,7 @@ message marker_info{
     double longitude = 10;
     /*optional*/ string uuid = 11;
     /*optional*/ string chat_uuid = 12; //for PRIVATE should not be present
-    int32 images_amount = 13;
+    repeated string images_uuid = 13; //empty in add_marker_request
     string other_data_json = 14;
 }
 
