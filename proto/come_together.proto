@@ -1,5 +1,5 @@
 syntax = "proto3";
-package ComeTogether;
+package come_together_grpc;
 
 message image{
     bytes data = 1;
