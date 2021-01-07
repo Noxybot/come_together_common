@@ -20,6 +20,7 @@ service MainEndpoint{
     rpc LoginUser(login_request) returns (login_response) {}
     //**********************************************************//
     rpc AddMarker(add_marker_request) returns (add_marker_response) {}
+    rpc DeleteMarker(delete_marker_request) returns (delete_marker_reponse) {}
     //may be unused (for now)
     rpc GetAllMarkers(access_token) returns (stream marker_info) {}
     //**********************************************************//
@@ -40,6 +41,22 @@ service MainEndpoint{
     * Delete existing marker or image
     */
     rpc SubscribeToEvents(access_token) returns (stream event) {}
+}
+
+message delete_marker_request{
+    string access_token = 1;
+    string marker_uuid = 2;
+}
+
+message delete_marker_reponse{
+    enum result{
+        NOT_SET = 0;
+        OK = 1;
+        INSUFFICIENT_PERMISIONS = 2;
+        MARKER_NOT_FOUND = 3;
+        OTHER = 999;
+    }
+    result res = 1;
 }
 
 message ask_token_request{
