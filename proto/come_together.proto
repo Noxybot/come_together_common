@@ -41,6 +41,22 @@ service MainEndpoint{
     * Delete existing marker or image
     */
     rpc SubscribeToEvents(access_token) returns (stream event) {}
+    rpc SendPushToken(send_push_token_request) returns (send_push_token_response) {}
+}
+
+message send_push_token_request{
+    string access_token = 1;
+    string push_token = 2;
+}
+
+message send_push_token_response{
+    enum result{
+        NOT_SET = 0;
+        OK = 1;
+        USER_NOT_LOGGED_IN = 2;
+        OTHER = 3;
+    }
+    result res = 1;
 }
 
 message delete_marker_request{
