@@ -8,7 +8,11 @@ message image{
 }
 
 message access_token{
-    string token = 1;
+    string value = 1;
+}
+
+message application_id{
+    string id = 1;
 }
 
 service MainEndpoint{
@@ -18,6 +22,7 @@ service MainEndpoint{
     rpc Check(check_request) returns (check_response) {} //check email, login
     rpc RegisterUser(register_request) returns (register_response) {}
     rpc LoginUser(login_request) returns (login_response) {}
+    rpc LogoutUser(logout_request) returns (logout_response) {}
     //**********************************************************//
     rpc AddMarker(add_marker_request) returns (add_marker_response) {}
     rpc DeleteMarker(delete_marker_request) returns (delete_marker_reponse) {}
@@ -40,12 +45,26 @@ service MainEndpoint{
     * Edit existing marker, message or user profile
     * Delete existing marker or image
     */
-    rpc SubscribeToEvents(access_token) returns (stream event) {}
+    rpc SubscribeToEvents(application_id) returns (stream event) {}
     rpc SendPushToken(send_push_token_request) returns (send_push_token_response) {}
 }
 
+message logout_request{
+    access_token token = 1;
+}
+
+message logout_response{
+    enum result{
+        NOT_SET = 0;
+        OK = 1;
+        TOKEN_NOT_FOUND = 2;
+        OTHER = 999;
+    }
+    result res = 1;
+}
+
 message send_push_token_request{
-    string access_token = 1;
+    application_id app_id = 1;
     string push_token = 2;
 }
 
@@ -60,7 +79,7 @@ message send_push_token_response{
 }
 
 message delete_marker_request{
-    string access_token = 1;
+    access_token token = 1;
     string marker_uuid = 2;
 }
 
@@ -111,7 +130,7 @@ message update_info_request{
         MARKER = 1;
         USER = 2; 
     }
-    string access_token = 1;
+    access_token token = 1;
     update_type type = 2;
     oneof data{
         marker_info m_info = 3;
@@ -157,7 +176,7 @@ message chat_info{
 }
 
 message get_chat_messages_request{
-    string access_token = 1;
+    string token = 1;
     string chat_uuid = 2;
     int32 page_size = 3; //how many messages will be returned
     int32 page_number = 4;
@@ -184,7 +203,7 @@ message chat_message{
 }
 
 message send_chat_message_request{
-    string access_token = 1;
+    access_token token = 1;
     chat_message message = 2;
 }
 
@@ -210,7 +229,7 @@ message get_info_request{
         CHAT = 3;
     }
     type info_type = 1;
-    string access_token = 2;
+    string token = 2;
     string target_uuid = 3; //user uuid or chat uuid
 }
 
@@ -232,7 +251,7 @@ message get_images_request{
     }
     type image_type = 1;
     string target_uuid = 2; //user or marker uuid
-    string access_token = 3;
+    access_token token = 3;
     int32 amount = 4; //-1 means all images
     string hash = 5; //MD5 hash of n last uuids; if it haven`t changed, server will not send images
     int32 starting_sequence_number = 6;
@@ -247,7 +266,7 @@ message manage_image_request{
         DELETE_MARKER_IMAGE = 4;
     }
     action act = 1;
-    string access_token = 2;
+    access_token token = 2;
     string target_uuid = 3; //user or marker uuid
     oneof data{
         bytes image = 4; //for uploading
@@ -288,8 +307,16 @@ message check_response{
 }
 
 message login_request{
-    string login = 1;
-    string password = 2;
+    enum type{
+        NOT_SET = 0;
+        BY_LOGIN_PASSWORD = 1;
+        BY_ACCESS_TOKEN = 2;
+    }
+    type typ = 1;
+    string login = 2;
+    string password = 3;
+    access_token token = 4;
+    application_id app_id = 5;
 }
 
 message login_response{
@@ -298,11 +325,12 @@ message login_response{
         OK = 1;
         USER_NOT_FOUND = 2;
         WRONG_PASSWORD = 3;
+        ACCESS_TOKEN_NOT_FOUND = 4;
         OTHER = 999;
     }
     result res = 1;
     /*optional*/ user_info info = 2;
-    string access_token = 3;
+    access_token token = 3;
 }
 
 message register_request{
@@ -319,7 +347,6 @@ message register_response{
     }
     result res = 1;
     /*optional*/ string user_uuid = 2;
-    /*optional*/ string access_token = 3;
 }
 
 message user_info{
