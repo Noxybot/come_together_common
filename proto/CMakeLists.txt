@@ -1,8 +1,9 @@
 set(PROTO_FILES
     come_together.proto
 )
+file( GLOB component_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/*.cc )
 # Add Library target with protobuf sources
-add_library(protocol ${PROTO_FILES})
+add_library(protocol ${PROTO_FILES} ${component_SOURCES})
 target_link_libraries(protocol
     PUBLIC
         protobuf::libprotobuf
