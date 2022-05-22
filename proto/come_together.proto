@@ -311,6 +311,7 @@ message login_request{
         NOT_SET = 0;
         BY_LOGIN_PASSWORD = 1;
         BY_ACCESS_TOKEN = 2;
+        BY_GOOGLE_TOKEN = 3;
     }
     type typ = 1;
     string login = 2;
