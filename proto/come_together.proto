@@ -362,7 +362,7 @@ message user_info{
 }
 
 message marker_info{
-    enum category{
+    enum sub_category{
        NOT_SET = 0;
        CYCLING = 1;
        FOOTBALL = 2;
@@ -383,18 +383,26 @@ message marker_info{
        QUEST = 17;
        ZOO = 18;
     }
+    enum category{
+        CATEGORY_NOT_SET = 0;
+        WATCH = 1;
+        NIGHT_LIFE = 2;
+        OTHER = 3;
+
+    }
     enum type{
         NOT_SET_MARKER_TYPE = 0;
         PRIVATE = 1;
         GROUP = 2;
     }
-    category cat = 1;
-    type marker_type = 2;
-    int64 from_unix_time = 3;
-    int64 to_unix_time = 4;
-    int64 creation_unix_time = 5;
-    string creator_uuid = 6;
-    string display_name = 7;
+    sub_category sub_cat = 1;
+    category cat = 2;
+    type marker_type = 3;
+    int64 from_unix_time = 4;
+    int64 to_unix_time = 5;
+    int64 creation_unix_time = 6;
+    string creator_uuid = 7;
+    string display_name = 8;
     double latitude = 9;
     double longitude = 10;
     /*optional*/ string uuid = 11;
