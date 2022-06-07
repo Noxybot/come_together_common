@@ -128,7 +128,7 @@ message update_info_request{
     enum update_type{
         NOT_SET = 0;
         MARKER = 1;
-        USER = 2; 
+        USER = 2;
     }
     access_token token = 1;
     update_type type = 2;
@@ -382,12 +382,15 @@ message marker_info{
        CONCERT = 16;
        QUEST = 17;
        ZOO = 18;
+       OTHER_SUBCATEGORY = 19;
     }
     enum category{
         CATEGORY_NOT_SET = 0;
-        WATCH = 1;
-        NIGHT_LIFE = 2;
-        OTHER = 3;
+        OTHER_CATEGORY = 1;
+        SPORT = 2;
+        WATCH = 3;
+        EAT = 4;
+        NIGHT_LIFE = 5;
 
     }
     enum type{
