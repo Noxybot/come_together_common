@@ -363,7 +363,6 @@ message user_info{
 
 message marker_info{
     enum sub_category{
-       NOT_SET = 0;
        CYCLING = 1;
        FOOTBALL = 2;
        BASKETBALL = 3;
@@ -385,7 +384,6 @@ message marker_info{
        OTHER_SUBCATEGORY = 19;
     }
     enum category{
-        CATEGORY_NOT_SET = 0;
         OTHER_CATEGORY = 1;
         SPORT = 2;
         WATCH = 3;
