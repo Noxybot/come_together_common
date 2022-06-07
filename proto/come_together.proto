@@ -363,32 +363,32 @@ message user_info{
 
 message marker_info{
     enum sub_category{
-       CYCLING = 1;
-       FOOTBALL = 2;
-       BASKETBALL = 3;
-       RUNNING = 4;
-       GYM = 5;
-       GALLERY = 6;
-       EXCURSION = 7;
-       THEATER = 8;
-       CINEMA = 9;
-       BAR = 10;
-       RESTAURANT = 11;
-       NIGTH_CLUB = 12;
-       HOOKAH = 13;
-       CAFE = 14;
-       WALK = 15;
-       CONCERT = 16;
-       QUEST = 17;
-       ZOO = 18;
-       OTHER_SUBCATEGORY = 19;
+       CYCLING = 0;
+       FOOTBALL = 1;
+       BASKETBALL = 2;
+       RUNNING = 3;
+       GYM = 4;
+       GALLERY = 5;
+       EXCURSION = 6;
+       THEATER = 7;
+       CINEMA = 8;
+       BAR = 9;
+       RESTAURANT = 10;
+       NIGTH_CLUB = 11;
+       HOOKAH = 12;
+       CAFE = 13;
+       WALK = 14;
+       CONCERT = 15;
+       QUEST = 16;
+       ZOO = 17;
+       OTHER_SUBCATEGORY = 18;
     }
     enum category{
-        OTHER_CATEGORY = 1;
-        SPORT = 2;
-        WATCH = 3;
-        EAT = 4;
-        NIGHT_LIFE = 5;
+        OTHER_CATEGORY = 0;
+        SPORT = 1;
+        WATCH = 2;
+        EAT = 3;
+        NIGHT_LIFE = 4;
 
     }
     enum type{
