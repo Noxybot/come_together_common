@@ -49,6 +49,42 @@ service MainEndpoint{
     rpc SendPushToken(send_push_token_request) returns (send_push_token_response) {}
 }
 
+service VerificationService{
+    rpc ValidatePhoto (stream validate_photo_request) returns ( validate_photo_response) {}
+}
+
+message validate_photo_request{
+    enum gestue_type{
+        NOT_SET = 0;
+        OK = 1;
+        POINTER = 2;
+    }
+    bytes user_photo = 1;
+    bytes validation_photo = 2;
+    bool user_photo_complete = 3;
+    bool validation_photo_complete = 4;
+    access_token token = 5;
+    gestue_type gestue = 6;
+}
+message validate_photo_response{
+    enum result{
+        NOT_SET = 0;
+        OK = 1;
+        WRONG_GESTUE = 2;
+        WRONG_FACE = 3;
+    }
+    result res = 1;
+}
+
+service RecomendationService{
+    rpc GetRecomendationForUser (get_recomendation_request) returns (stream marker_info) {}
+}
+
+message get_recomendation_request{
+    string uuid = 1;
+}
+
+
 message logout_request{
     access_token token = 1;
 }
