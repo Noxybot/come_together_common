@@ -63,7 +63,7 @@ message validate_photo_request{
     bytes validation_photo = 2;
     bool user_photo_complete = 3;
     bool validation_photo_complete = 4;
-    access_token token = 5;
+    application_id app_id = 5;
     gestue_type gestue = 6;
 }
 message validate_photo_response{
