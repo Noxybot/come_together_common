@@ -47,6 +47,21 @@ service MainEndpoint{
     */
     rpc SubscribeToEvents(application_id) returns (stream event) {}
     rpc SendPushToken(send_push_token_request) returns (send_push_token_response) {}
+    rpc JoinChat(join_request) returns (join_response) {}
+}
+
+message join_request {
+    string user_uuid = 1;
+    string chat_uuid = 2;
+}
+
+message join_response{
+    enum result {
+        NOT_SET = 0;
+        OK = 1;
+        NOT_FOUND = 2;
+    }
+    result res = 1;
 }
 
 service VerificationService{
@@ -66,14 +81,15 @@ message validate_photo_request{
     application_id app_id = 5;
     gestue_type gestue = 6;
 }
+enum verification_result{
+	NOT_SET = 0;
+	OK = 1;
+	WRONG_GESTUE = 2;
+	WRONG_FACE = 3;
+}
 message validate_photo_response{
-    enum result{
-        NOT_SET = 0;
-        OK = 1;
-        WRONG_GESTUE = 2;
-        WRONG_FACE = 3;
-    }
-    result res = 1;
+
+	verification_result res = 1;
 }
 
 service RecomendationService{
@@ -195,6 +211,7 @@ message event{
         MESSAGE_EDITED = 6;
         MESSAGE_DELETED = 7;
         USER_UPDATED = 8;
+        USER_ADDED_TO_CHAT = 9;
     }
     type event_type = 1;
     oneof data{
@@ -395,6 +412,8 @@ message user_info{
     /*optional*/ string last_name = 6; //may be absent
     /*optional*/ repeated string images_uuid = 7; //absent in register_request or may be empty
     /*optional*/ string other_info_json = 8; //may be absent
+    verification_result verif_result = 9;
+
 }
 
 message marker_info{
@@ -446,6 +465,7 @@ message marker_info{
     /*optional*/ string chat_uuid = 12; //for PRIVATE should not be present
     repeated string images_uuid = 13; //empty in add_marker_request
     string other_data_json = 14;
+    chat_info c_info = 15;
 }
 
 message add_marker_request{
