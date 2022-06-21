@@ -98,11 +98,14 @@ message validate_photo_response{
 }
 
 service RecomendationService{
-    rpc GetRecomendationForUser (get_recomendation_request) returns (stream marker_info) {}
+    rpc GetRecomendationForUser (get_recomendation_request) returns (stream get_recomendation_response) {}
 }
 
 message get_recomendation_request{
     string uuid = 1;
+}
+message get_recomendation_response{
+	string marker_id = 1;
 }
 
 
@@ -471,6 +474,7 @@ message marker_info{
     repeated string images_uuid = 13; //empty in add_marker_request
     string other_data_json = 14;
     chat_info c_info = 15;
+    bytes image = 16;
 }
 
 message add_marker_request{
