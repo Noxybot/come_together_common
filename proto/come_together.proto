@@ -234,6 +234,7 @@ message chat_info{
     string title = 2; //empty for personal chats
     repeated string participants_uuid = 3;
     string last_visible_message = 4;
+    string marker_uuid = 5;
 }
 
 message get_chat_messages_request{
