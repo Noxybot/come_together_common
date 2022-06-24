@@ -2,9 +2,19 @@ syntax = "proto3";
 package come_together_grpc;
 
 message image{
-    bytes data = 1;
-    string uuid = 2;
-    int32 sequence_number = 3;
+    enum type {
+        NOT_SET = 0;
+        BINARY = 1;
+        URL = 2;
+        UUID = 3; //just uuid of image, without data
+    }
+    oneof data{
+        bytes binary = 1;
+        string text = 2;
+    }
+    string uuid = 3;
+    int32 sequence_number = 4;
+    type typ = 5;
 }
 
 message access_token{
@@ -420,7 +430,7 @@ message user_info{
     string password = 4;
     string first_name = 5;
     /*optional*/ string last_name = 6; //may be absent
-    /*optional*/ repeated string images_uuid = 7; //absent in register_request or may be empty
+    /*optional*/ repeated image images = 7; //absent in register_request or may be empty
     /*optional*/ string other_info_json = 8; //may be absent
     verification_result verif_result = 9;
 
@@ -473,7 +483,7 @@ message marker_info{
     double longitude = 10;
     /*optional*/ string uuid = 11;
     /*optional*/ string chat_uuid = 12; //for PRIVATE should not be present
-    repeated string images_uuid = 13; //empty in add_marker_request
+    repeated image images = 13; //empty in add_marker_request
     string other_data_json = 14;
     chat_info c_info = 15; //need to be removed
     string address = 16;
