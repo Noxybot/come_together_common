@@ -433,6 +433,10 @@ message user_info{
     /*optional*/ repeated image images = 7; //absent in register_request or may be empty
     /*optional*/ string other_info_json = 8; //may be absent
     verification_result verif_result = 9;
+    string bio = 10;
+    string country = 11;
+    string city = 12;
+    int64 unix_time_of_birth  = 13;
 
 }
 
