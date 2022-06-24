@@ -45,7 +45,7 @@ service MainEndpoint{
     * Edit existing marker, message or user profile
     * Delete existing marker or image
     */
-    rpc SubscribeToEvents(application_id) returns (stream event) {}
+    rpc SubscribeToEvents(access_token) returns (stream event) {}
     rpc SendPushToken(send_push_token_request) returns (send_push_token_response) {}
     rpc JoinChat(join_request) returns (join_response) {}
     rpc GetUserChats(get_chats_request) returns (stream chat_info) {}
@@ -67,6 +67,7 @@ message join_response{
         NOT_FOUND = 2;
     }
     result res = 1;
+    repeated string parts_uuid = 2;
 }
 
 service VerificationService{
@@ -474,8 +475,13 @@ message marker_info{
     /*optional*/ string chat_uuid = 12; //for PRIVATE should not be present
     repeated string images_uuid = 13; //empty in add_marker_request
     string other_data_json = 14;
-    chat_info c_info = 15;
-    bytes image = 16;
+    chat_info c_info = 15; //need to be removed
+    string address = 16;
+    string description = 17;
+    int32 people_from = 18;
+    int32 people_to = 19;
+    int32 expenses_from = 20;
+    int32 expenses_to = 21;
 }
 
 message add_marker_request{
